@@ -2,6 +2,7 @@ import re
 from .preprocessor import Preprocessor
 from .line_scorer import LineScorer
 from .pattern_generator import PatternGenerator
+from .regex_tree import RegexTree
 
 
 class Clusterer():
@@ -45,7 +46,12 @@ class Clusterer():
                 self.clusters[i][2] = merged_pattern
                 break
         if not found:
-            self.clusters.append([processed_tokens, 1, processed_tokens])
+            pattern = []
+            for token in processed_tokens:
+                tree = RegexTree()
+                tree.merge_pattern(token)
+                pattern.append(tree)
+            self.clusters.append([processed_tokens, 1, pattern])
 
     def result(self):
         if self.min_members > 1:

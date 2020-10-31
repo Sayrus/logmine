@@ -1,6 +1,7 @@
 from .pattern_generator import PatternPlaceholder
 from .variable import Variable
 from .debug import log
+from .regex_tree import RegexTree
 import functools
 
 
@@ -45,6 +46,8 @@ class Output():
             else:
                 log('subject = fields')
                 subject = fields
+                # Override
+                subject = pattern
 
             for i in range(len(subject)):
                 field = subject[i]
@@ -65,6 +68,14 @@ class Output():
                     if self.options.get('highlight_variables') is True:
                         value = CYELLOW + value + CEND
                     output.append(value)
+                elif isinstance(pattern[i], RegexTree):
+                    if pattern[i].initialized == False:
+                        output.append(pattern[i].first_value)
+                    else:
+                        value = pattern[i].extract_pattern()
+                        if self.options.get('highlight_variables') is True:
+                            value = CRED + value + CEND
+                        output.append(value)
                 else:
                     output.append(field)
 
