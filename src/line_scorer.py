@@ -1,4 +1,5 @@
 from .variable import Variable
+from .regex_tree import RegexTree
 
 
 class LineScorer():
@@ -37,6 +38,22 @@ class LineScorer():
         if (
             isinstance(field1, Variable) and
             isinstance(field2, Variable) and
+            field1 == field2
+        ):
+            return self.k2
+
+        if (isinstance(field1, RegexTree) and
+            isinstance(field2, str) and
+            field1 == field2
+        ):
+            return self.k2
+        if (isinstance(field2, RegexTree) and
+            isinstance(field1, str) and
+            field2 == field1
+        ):
+            return self.k2
+        if (isinstance(field1, RegexTree) and
+            isinstance(field2, RegexTree) and
             field1 == field2
         ):
             return self.k2

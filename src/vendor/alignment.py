@@ -104,12 +104,12 @@ def water(seq1, seq2):
             i -= 1
             j -= 1
         elif pointer[i][j] == 2:
-            align1.append('-')
+            align1.append(None)
             align2.append(seq2[j-1])
             j -= 1
         elif pointer[i][j] == 1:
             align1.append(seq1[i-1])
-            align2.append('-')
+            align2.append(None)
             i -= 1
 
     return finalize(align1, align2)

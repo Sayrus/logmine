@@ -34,6 +34,8 @@ class Clusterer():
         found = False
         for i in range(len(self.clusters)):
             [representative, count, pattern] = self.clusters[i]
+            representative = [ pattern.get_repr(reprI) for pattern,reprI in
+                    zip(pattern, processed_tokens) ]
             score = self.scorer.distance(
                 # representative, processed_tokens, self.max_dist
                 representative, processed_tokens, self.max_dist
@@ -42,7 +44,7 @@ class Clusterer():
                 found = True
                 self.clusters[i][1] += 1
                 merged_pattern = self.pattern_generator.create_pattern(
-                    pattern, processed_tokens)
+                    pattern, processed_tokens, representative)
                 self.clusters[i][2] = merged_pattern
                 break
         if not found:

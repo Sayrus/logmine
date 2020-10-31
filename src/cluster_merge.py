@@ -11,13 +11,18 @@ class ClusterMerge():
             exists = False
             for i in range(len(base_list)):
                 [reprB, countB, patternB] = base_list[i]
+                # Fix for alignment
+                reprA = [ pattern.get_repr(reprI) for pattern,reprI in
+                        zip(patternA, reprB) ]
+                reprB = [ pattern.get_repr(reprI) for pattern,reprI in
+                        zip(patternB, reprA) ]
                 score = self.clusterer.scorer.distance(
                     reprA, reprB, self.clusterer.max_dist)
                 if score <= self.clusterer.max_dist:
                     exists = True
                     base_list[i][1] += countA
                     merged_pattern = self.pattern_generator.create_pattern(
-                            patternA, patternB)
+                            patternA, patternB, reprA, reprB)
                     base_list[i][2] = merged_pattern
                     break
             if not exists:

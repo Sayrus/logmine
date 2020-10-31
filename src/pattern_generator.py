@@ -11,20 +11,28 @@ class PatternGenerator():
         self.placeholder = placeholder
 
     # FIXME: Handle tree
-    def create_pattern(self, a, b):
+    def create_pattern(self, a, b, reprA = None, reprB = None):
         if len(a) == 0 and len(b) == 0:
             return []
-        (a, b) = water(a, b)
+        if reprA is None:
+            reprA = a
+        if reprB is None:
+            reprB = b
+        (w_a, w_b) = water(reprA, reprB)
         new = []
-        for i in range(len(a)):
-            if a[i] == "-":
+        offsetA = 0
+        offsetB = 0
+        for i in range(len(w_a)):
+            if w_a[i] is None:
+                offsetA += 1
                 tree = RegexTree()
-                tree.merge_pattern(b[i])
+                tree.merge_pattern(b[i - offsetB])
                 new.append(tree)
-            elif b[i] == "-":
-                a[i].make_nullable()
-                new.append(a[i])
+            elif w_b[i] is None:
+                offsetB += 1
+                a[i - offsetA].make_nullable()
+                new.append(a[i - offsetA])
             else:
-                a[i].merge_pattern(b[i])
-                new.append(a[i])
+                a[i - offsetA].merge_pattern(b[i - offsetB])
+                new.append(a[i - offsetA])
         return new
