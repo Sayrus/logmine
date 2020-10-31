@@ -2,7 +2,8 @@ import re
 
 class RegexTreeNode():
     def __init__(self, regex, children):
-        self.regex = re.compile(regex)
+        self.regex = re.compile("^" + regex + "$")
+        self.display_name = regex
         self.children = children
 
     def match_update(self, field):
@@ -11,20 +12,20 @@ class RegexTreeNode():
         self.children = [node for node in self.children if node.match_update(field)]
         return True
 
+    def extract_pattern(self, policy):
+        if policy == "first_leaf":
+            return self.get_first_leaf()
+        return self.get_first_intersect_or_leaf()
+
+    def get_first_intersect_or_leaf(self):
+        if len(self.children) != 1:
+            return self.display_name
+        return self.children[0].get_first_intersect_or_leaf()
+
     def get_first_leaf(self):
         if len(self.children) > 0:
             return self.children[0].get_first_leaf()
-        return self.regex.pattern
-
-    def match_to_leaf(self, field):
-        if self.regex.fullmatch(field) is None:
-            return False
-        if len(self.children) == 0:
-            return True
-        for child in self.children:
-            if child.match_to_leaf(field):
-                return True
-        return False
+        return self.display_name
 
     def merge_tree(self, node):
         new_children = []
@@ -67,55 +68,23 @@ class RegexTree():
         self.root.match_update(field)
 
     def merge_tree(self, tree):
-        if self.initialized == False and tree.initialized == False:
-            # If value has yet to be provided
-            if self.first_value is None and tree.first_value is None:
-                return
-            # If only the first tree has a value
-            if tree.first_value is None:
-                return
-            # If only the second tree has a value
-            if self.first_value is None:
-                self.root = tree.root
-                self.first_value = tree.first_value
-                self.nullable = tree.nullable or self.nullable
-                return
-            # If both have a value
+        if not tree.initialized:
             self.merge_pattern(tree.first_value)
             return
-        if self.initialized == False and tree.initialized == True:
+        if not self.initialized and tree.initialized:
             tree.merge_pattern(self.first_value)
             self.root = tree.root
             self.first_value = tree.first_value
             self.nullable = tree.nullable or self.nullable
             self.initialized = tree.initialized
             return
-        if self.initialized == True and tree.initialized == False:
-            self.merge_pattern(tree.first_value)
-            return
         self.root.merge_tree(tree.root)
         self.nullable = tree.nullable or self.nullable
 
-    def extract_pattern(self):
-        """To avoid heuristics, we return the first leaf."""
-        # FIXME: Add heuristics
-        # Not initialized means constant
-        return self.root.get_first_leaf()
-
-    def __repr__(self):
-        return "REPR"
-        return self.extract_pattern()
-
-    def __str__(self):
-        return "STR"
-        return self.extract_pattern()
+    def extract_pattern(self, policy = ""):
+        if self.nullable:
+            return "(" + self.root.extract_pattern(policy) + ")?"
+        return self.root.extract_pattern(policy)
 
     def make_nullable(self):
         self.nullable = True
-
-    def __eq__(self, obj):
-        # FIXME: current is a match to **ANY** leaf
-        # Trick as we only compare to string
-        if not isinstance(obj, str):
-            return False
-        self.root.match_to_leaf(obj)
